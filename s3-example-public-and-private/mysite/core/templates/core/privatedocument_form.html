@@ -2,7 +2,7 @@
 
 {% block content %}
   <h2>Private Uploads</h2>
-  <h3>{{ user.username }}'s Profile - Upload to Amazon S3</h3>
+  <h3>{{ user.username }}'s Profile - Upload to Backblaze B2</h3>
 
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
