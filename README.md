@@ -1,6 +1,6 @@
 # How to Setup Backblaze B2 in a Django Project
 
-_Forked from the excellent [simple-s3-setup](https://github.com/sibtc/simple-s3-setup) by [sibtc]/(https://github.com/sibtc/)
+_Forked from the excellent [simple-s3-setup](https://github.com/sibtc/simple-s3-setup) by [sibtc]/(https://github.com/sibtc/)_
 
 Each of the directories are an independent Django Project.
 
