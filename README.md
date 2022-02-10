@@ -2,9 +2,11 @@
 
 _Forked from the excellent [simple-s3-setup](https://github.com/sibtc/simple-s3-setup) by [sibtc](https://github.com/sibtc/)_.
 
-Each of the directories are an independent Django Project.
+Each of the directories is an independent Django Project.
 
 For the most part you can run all of them by following the steps below:
+
+Add your B2 configuration to `settings.py`
 
 ```bash
 pip install -r requirements.txt
