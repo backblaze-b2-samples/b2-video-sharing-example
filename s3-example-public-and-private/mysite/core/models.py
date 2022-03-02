@@ -13,4 +13,4 @@ class Document(models.Model):
 class PrivateDocument(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     upload = models.FileField(storage=PrivateMediaStorage())
-    user = models.ForeignKey(User, related_name='documents')
+    user = models.ForeignKey(User, related_name='documents', on_delete=models.CASCADE)

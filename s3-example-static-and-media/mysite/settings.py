@@ -71,6 +71,8 @@ DATABASES = {
     }
 }
 
+DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -92,15 +94,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'mysite/static'),
 ]
 
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
-AWS_PRIVATE_BUCKET_NAME = ''
-AWS_STORAGE_BUCKET_NAME = ''
-AWS_S3_ENDPOINT_URL = 'https://s3.<region>.backblazeb2.com'
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.<region>.backblazeb2.com' % AWS_STORAGE_BUCKET_NAME
+AWS_ACCESS_KEY_ID = '<your b2 application key id>'
+AWS_SECRET_ACCESS_KEY = '<your b2 application key>'
+AWS_STORAGE_BUCKET_NAME = '<a public bucket>'
+AWS_S3_REGION_NAME = '<your b2 region - e.g. us-west-001>'
 
-AWS_S3_VERIFY = False
-AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_ENDPOINT = f's3.{AWS_S3_REGION_NAME}.backblazeb2.com'
+AWS_S3_ENDPOINT_URL = f'https://{AWS_S3_ENDPOINT}'
 
 AWS_S3_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
@@ -108,6 +108,6 @@ AWS_S3_OBJECT_PARAMETERS = {
 
 AWS_LOCATION = 'static'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT}/"
 
 DEFAULT_FILE_STORAGE = 'mysite.storage_backends.MediaStorage'

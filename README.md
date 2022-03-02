@@ -14,8 +14,7 @@ AWS_SECRET_ACCESS_KEY = '<your b2 application key>'
 # AWS_PRIVATE_BUCKET_NAME applies to s3-example-public-and-private only
 AWS_PRIVATE_BUCKET_NAME = '<a private bucket>'
 AWS_STORAGE_BUCKET_NAME = '<a public bucket>'
-AWS_S3_ENDPOINT_URL = 'https://<your b2 endpoint>'
-AWS_S3_CUSTOM_DOMAIN = '%s.<your b2 endpoint>' % AWS_STORAGE_BUCKET_NAME
+AWS_S3_REGION_NAME = '<your b2 region - e.g. us-west-001>'
 ```
 
 ```bash
