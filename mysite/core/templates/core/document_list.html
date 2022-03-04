@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Your Videos</h2>
+
+  <p>
+    <a href="/myvideos/upload">Upload a video</a> /
+    <a href="/myvideos/delete_all">Delete all</a>
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Uploaded at</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for document in user.documents.all %}
+        <tr>
+          <td><a href="/myvideos/{{ document.upload.name }}" target="_blank">{{ document.title }}</a></td>
+          <td>{{ document.uploaded_at }}</td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="2">No data.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
