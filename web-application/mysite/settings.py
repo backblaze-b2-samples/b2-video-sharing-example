@@ -120,6 +120,13 @@ AWS_PRIVATE_MEDIA_LOCATION = 'media/private'
 PRIVATE_FILE_STORAGE = 'mysite.storage_backends.PrivateMediaStorage'
 
 LOGIN_URL = 'login'
+<<<<<<< HEAD:web-application/mysite/settings.py
 LOGIN_REDIRECT_URL = 'home'
 
 LOGOUT_REDIRECT_URL = 'home'
+=======
+LOGIN_REDIRECT_URL = 'myvideos'
+
+# Change this to point to your transcoder worker
+TRANSCODER_WEBHOOK = 'http://<your transcoder hostname>/videos'
+>>>>>>> b21caac (Rewritten with transcoder):mysite/settings.py
