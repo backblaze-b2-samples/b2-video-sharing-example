@@ -26,16 +26,6 @@ def index(request):
     return render(request, 'core/index.html')
 
 
-def notify_transcoder(object_key):
-    payload = {
-        'inputObject': object_key,
-        'webhook': transcoder_url
-    }
-    print(f'Sending {payload} to {transcoder_url}')
-    r = requests.post(transcoder_url, json=payload)
-    print(f'Status code: {r.status_code}')
-
-
 @method_decorator(login_required, name='dispatch')
 class DocumentListView(ListView):
     model = Document
@@ -60,7 +50,9 @@ class DocumentCreateView(CreateView):
         self.object.user = self.request.user
         self.object.save()
         response = super().form_valid(form)
-        notify_transcoder(f'{private_bucket_name}/{self.object.upload.name}')
+        webhook = self.request.build_absolute_uri(reverse('notification'))
+        print(f'Our webhook is {webhook}')
+        notify_transcoder(webhook, f'{private_bucket_name}/{self.object.upload.name}')
         return response
 
 
@@ -81,6 +73,16 @@ def document_detail(request, name):
         return Response(serializer.data)
     except Document.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+def notify_transcoder(webhook, object_key):
+    payload = {
+        'inputObject': object_key,
+        'webhook': webhook
+    }
+    print(f'Sending {payload} to {transcoder_url}')
+    r = requests.post(transcoder_url, json=payload)
+    print(f'Status code: {r.status_code}')
 
 
 @api_view(['POST'])

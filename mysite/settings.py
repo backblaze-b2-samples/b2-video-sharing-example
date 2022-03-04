@@ -1,5 +1,9 @@
 import os
 
+# Never put credentials in your code!
+from dotenv import load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -94,12 +98,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'mysite/static'),
 ]
 
-# Change these to match your configuration
-AWS_ACCESS_KEY_ID = '<your b2 application key id>'
-AWS_SECRET_ACCESS_KEY = '<your b2 application key>'
-AWS_PRIVATE_BUCKET_NAME = '<a private bucket>'
-AWS_STORAGE_BUCKET_NAME = '<a public bucket>'
-AWS_S3_REGION_NAME = '<your b2 region - e.g. us-west-001>'
+# Set these in a .env file or as environment variables
+AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+AWS_PRIVATE_BUCKET_NAME = os.environ['AWS_PRIVATE_BUCKET_NAME']
+AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
+AWS_S3_REGION_NAME = os.environ['AWS_S3_REGION_NAME']
+TRANSCODER_WEBHOOK = os.environ['TRANSCODER_WEBHOOK']
 
 AWS_S3_ENDPOINT = f's3.{AWS_S3_REGION_NAME}.backblazeb2.com'
 AWS_S3_ENDPOINT_URL = f'https://{AWS_S3_ENDPOINT}'
@@ -120,6 +125,3 @@ PRIVATE_FILE_STORAGE = 'mysite.storage_backends.PrivateMediaStorage'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'myvideos'
-
-# Change this to point to your transcoder worker
-TRANSCODER_WEBHOOK = 'http://<your transcoder hostname>/videos'

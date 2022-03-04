@@ -15,7 +15,6 @@ urlpatterns = [
     path('myvideos/<str:document_detail>', views.DocumentDetailView.as_view(), name='watch'),
 
     # REST API
-    path('videos/', views.transcoder_notification),
-    path('documents/<str:name>', views.document_detail),
+    path('videos/', views.transcoder_notification, name='notification'),
+    path('documents/<str:name>', views.document_detail, name='document_detail'),
 ]
-
