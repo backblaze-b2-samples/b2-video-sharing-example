@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+  <div id="uploader">
+    <h2>Upload a Video</h2>
+    <form id="form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <div id="message" style="display: none">
+    <h2>Please wait while your video is uploaded</h2>
+    <img src="{% static 'images/throbber.gif' %}">
+  </div>
+
+  <script>
+    async function handleForm(event) {
+      // Show the message, hide the upload form
+      document.getElementById('uploader').style.setProperty('display', 'none');
+      document.getElementById('message').style.removeProperty('display');
+
+      // Get the file object from the form
+      const file = form.elements["upload"].files[0]
+
+      // Discard the 'fake path' in the filename
+      const name = file.name.split("\\").pop()
+
+      // Make a FormData to POST
+      const data = new FormData();
+      data.append('upload', file);
+      data.append('title', form.elements["title"].value);
+      data.append('csrfmiddlewaretoken', form.elements["csrfmiddlewaretoken"].value);
+
+      fetch('', {
+        method: 'POST',
+        body: data,
+      })
+      .then(response => {
+        if (response.ok) {
+          console.log(`Fetch succeeded; url: ${response.url}`);
+
+          // Go to detail page
+          location.href = response.url;
+        } else {
+          console.log(`Fetch failed with status code: ${response.status}`);
+        }
+      })
+      .catch(error => console.log(`Fetch failed: ${error}`));
+
+      // Don't switch the page when the upload is complete
+      event.preventDefault();
+    }
+
+    const form = document.getElementById('form');
+    form.addEventListener('submit', handleForm);
+  </script>
+{% endblock %}
