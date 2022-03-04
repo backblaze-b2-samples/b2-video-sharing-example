@@ -18,7 +18,7 @@
     <tbody>
       {% for document in user.documents.all %}
         <tr>
-          <td><a href="/myvideos/{{ document.upload.name }}" target="_blank">{{ document.title }}</a></td>
+          <td><a href="/myvideos/{{ document.upload.name }}">{{ document.title }}</a></td>
           <td>{{ document.uploaded_at }}</td>
         </tr>
       {% empty %}
