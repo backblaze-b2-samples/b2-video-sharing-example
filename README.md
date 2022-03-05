@@ -51,16 +51,9 @@ install dependencies for the components as required:
 
 For the web application:
 
-Configure each of the samples for Backblaze B2 by adding your B2 configuration to `settings.py`:
+* Once the video is uploaded, a JavaScript front end in the browser polls an API at the web app until the transcoded version is available.
 
-```bash
-AWS_ACCESS_KEY_ID = '<your b2 application key id>'
-AWS_SECRET_ACCESS_KEY = '<your b2 application key>'
-# AWS_PRIVATE_BUCKET_NAME applies to s3-example-public-and-private only
-AWS_PRIVATE_BUCKET_NAME = '<a private bucket>'
-AWS_STORAGE_BUCKET_NAME = '<a public bucket>'
-AWS_S3_REGION_NAME = '<your b2 region - e.g. us-west-001>'
-```
+* On receiving the video, the web app:
 
 ```bash
 cd web-application
