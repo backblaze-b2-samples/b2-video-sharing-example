@@ -1,41 +1,38 @@
+import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
-from django.urls import reverse, reverse_lazy
-from django.utils.decorators import method_decorator
-
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .models import Document, Video
-from .serializers import DocumentSerializer, VideoSerializer
-
-import requests
-
+from .models import Document
+from .serializers import DocumentSerializer, NotificationSerializer
 
 transcoder_url = settings.TRANSCODER_WEBHOOK
 private_bucket_name = settings.AWS_PRIVATE_MEDIA_LOCATION
 
 
-def index(request):
-    return render(request, 'core/index.html')
-
-
-@method_decorator(login_required, name='dispatch')
 class DocumentListView(ListView):
     model = Document
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        documents = Document.objects.all()
+        context['documents'] = documents
+        return context
 
-@method_decorator(login_required, name='dispatch')
+
 class DocumentDetailView(DetailView):
     model = Document
     slug_field = 'upload'
     slug_url_kwarg = 'document_detail'
+
 
 @method_decorator(login_required, name='dispatch')
 class DocumentCreateView(CreateView):
@@ -43,7 +40,7 @@ class DocumentCreateView(CreateView):
     fields = ['title', 'upload', ]
 
     def get_success_url(self):
-        return reverse_lazy('watch', kwargs={'document_detail' : self.object.upload.name})
+        return reverse_lazy('watch', kwargs={'document_detail': self.object.upload.name})
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -60,7 +57,7 @@ class DocumentCreateView(CreateView):
 def delete_all(request):
     response = Document.objects.all().delete()
     print(response)
-    return HttpResponseRedirect(reverse('myvideos'))
+    return HttpResponseRedirect(reverse('home'))
 
 
 @api_view(['GET'])
@@ -87,7 +84,7 @@ def notify_transcoder(webhook, object_key):
 
 @api_view(['POST'])
 def transcoder_notification(request):
-    serializer = VideoSerializer(data=request.data)
+    serializer = NotificationSerializer(data=request.data)
     if serializer.is_valid():
         print(f'Received notification: {serializer.data}')
 
@@ -95,11 +92,13 @@ def transcoder_notification(request):
             # Remove the path prefixes from the object keys
             upload = request.data['inputObject'].removeprefix(f'{private_bucket_name}/')
             transcoded = request.data['outputObject'].removeprefix(f'{private_bucket_name}/')
+            thumbnail = request.data['thumbnail'].removeprefix(f'{private_bucket_name}/')
 
-            print(f'Getting doc {upload}')
+            print(f'Getting {upload}')
 
             doc = Document.objects.get(upload=upload)
             doc.transcoded.name = transcoded
+            doc.thumbnail.name = thumbnail
 
             print(f'Saving {doc}')
             doc.save()

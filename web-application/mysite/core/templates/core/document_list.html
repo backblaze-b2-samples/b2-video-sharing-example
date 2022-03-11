@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <a href="/upload/">Upload a video</a>
+        / <a href="{% url 'logout' %}">Log out</a>
+        <!-- 'Delete all' is useful for testing! -->
+        <!-- / <a href="/videos/delete_all">Delete all</a> -->
+    {% else %}
+        <a href="{% url 'login' %}">Log in</a> to upload a video!
+    {% endif %}
+    <hr>
+
+    <div id="grid">
+        {% for document in documents %}
+            <div>
+                <a href="/videos/{{ document.upload.name }}">
+                    <img src="{{ document.thumbnail.url }}"><br>
+                </a>
+                <b>{{ document.title }}</b><br>
+                {{ document.user.username }}<br>
+                {{ document.uploaded_at }}
+            </div>
+            {% empty %}
+            <div>
+                <p>No videos</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

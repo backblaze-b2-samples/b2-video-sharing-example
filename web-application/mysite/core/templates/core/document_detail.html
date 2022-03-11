@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <a href="{% url 'home' %}">Home</a>
+    / <a href="{% url 'logout' %}">Log out</a>
+    <hr>
+    {% if object.transcoded %}
+        <video width="640" height="360" controls>
+            <source src="{{ object.transcoded.url }}" type="video/mp4">
+        </video>
+        <h2>{{ object.title }}</h2>
+        {{ document.user.username }}<br>
+        {{ document.uploaded_at }}
+    {% else %}
+        <h2>Please wait while your video is processed</h2>
+
+        <img id="throbber" src="{% static 'images/throbber.gif' %}">
+
+        <script>
+            async function pollForTranscoded(name) {
+                console.log(`Polling for ${name}`)
+                const response = await fetch(`/documents/${name}`)
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                    });
+
+                if (response?.transcoded) {
+                    location.reload();
+                }
+            }
+
+            async function handleLoad(event) {
+                const name = location.pathname.split('/').pop();
+                setInterval(pollForTranscoded, 1000, name);
+            }
+
+            window.onload = handleLoad;
+        </script>
+    {% endif %}
+
+{% endblock %}
