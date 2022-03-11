@@ -123,6 +123,3 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 
 LOGOUT_REDIRECT_URL = 'home'
-
-# Change this to point to your transcoder worker
-TRANSCODER_WEBHOOK = 'http://<your transcoder hostname>/videos'

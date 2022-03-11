@@ -43,21 +43,15 @@ video sharing site.
 
 ## Installation
 
-You may deploy both apps on the same host, listening on different ports, or on two different hosts. If the apps are
-running on different hosts, you must ensure that there is connectivity on the ports you are using.
+You may deploy both apps on the same host, listening on different ports, or on two different hosts. If the apps are running on different hosts, you must ensure that there is connectivity on the ports you are using.
 
-Clone this repository onto each host. On each host, `cd` into the local repository directory, then use `pip install` to
-install dependencies for the components as required:
+Clone this repository onto each host. On each host, `cd` into the local repository directory, then use `pip install` to install dependencies for the components as required:
 
 For the web application:
 
-* Once the video is uploaded, a JavaScript front end in the browser polls an API at the web app until the transcoded version is available.
-
-* On receiving the video, the web app:
-
 ```bash
 cd web-application
-pip install -r requirements
+pip install -r requirements.txt
 cd ..
 ```
 
@@ -65,7 +59,7 @@ For the worker:
 
 ```bash
 cd worker
-pip install -r requirements
+pip install -r requirements.txt
 cd ..
 ```
 
