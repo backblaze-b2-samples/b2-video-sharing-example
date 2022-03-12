@@ -51,6 +51,8 @@ install dependencies for the components as required:
 
 For the web application:
 
+Add your B2 configuration to `settings.py`
+
 ```bash
 cd web-application
 pip install -r requirements
