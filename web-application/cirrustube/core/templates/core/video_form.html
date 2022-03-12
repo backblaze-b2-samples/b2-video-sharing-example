@@ -16,7 +16,7 @@
             <p>
                 <button type="button" name="button" id="select" onclick="uploadFile()"><b>Select a video</b></button>
                 <button disabled="true" type="submit" id="submit">Upload</button> <span id="fileinfo"></span>
-                <input type="file" name="upload" required="" id="id_upload" accept="video/*">
+                <input type="file" name="raw" required="" id="id_raw" accept="video/*">
             </p>
         </form>
     </div>
@@ -27,31 +27,35 @@
     </div>
 
     <script>
-        const form = document.querySelector('#form');
-        form.addEventListener('submit', handleFormSubmit);
+        const formEl = document.querySelector('#form');
+        const fileInputEl = document.querySelector('#id_raw');
+        const titleEl = document.querySelector('#id_title');
+        const submitEl = document.querySelector('#submit');
+        const fileInfoEl = document.querySelector('#fileinfo');
+        const selectEl = document.querySelector('#select');
+        const uploaderEl = document.querySelector('#uploader');
+        const messageEl = document.querySelector('#message');
 
-        const fileInput = document.querySelector('#id_upload');
-        fileInput.addEventListener('change', handleFileSelectAndTitle);
-
-        const title = document.querySelector('#id_title');
-        title.addEventListener('input', handleFileSelectAndTitle);
+        formEl.addEventListener('submit', handleFormSubmit);
+        fileInputEl.addEventListener('change', handleFileSelectAndTitle);
+        titleEl.addEventListener('input', handleFileSelectAndTitle);
 
         async function handleFormSubmit(event) {
             // Show the message, hide the upload form
-            document.querySelector('#uploader').style.setProperty('display', 'none');
-            document.querySelector('#message').style.removeProperty('display');
+            uploaderEl.style.setProperty('display', 'none');
+            messageEl.style.removeProperty('display');
 
             // Get the file object from the form
-            const file = form.elements["upload"].files[0]
+            const file = formEl.elements["raw"].files[0]
 
             // Discard the 'fake path' in the filename
             const name = file.name.split("\\").pop()
 
             // Make a FormData object to POST
             const formData = new FormData();
-            formData.append('upload', file);
-            formData.append('title', form.elements["title"].value);
-            formData.append('csrfmiddlewaretoken', form.elements["csrfmiddlewaretoken"].value);
+            formData.append('raw', file);
+            formData.append('title', formEl.elements["title"].value);
+            formData.append('csrfmiddlewaretoken', formEl.elements["csrfmiddlewaretoken"].value);
 
             // POST the file
             fetch('', {
@@ -75,32 +79,34 @@
         }
 
         function handleFileSelectAndTitle() {
-            const curFiles = fileInput.files;
-            const titleValue = title.value;
+            const curFiles = fileInputEl.files;
+            const titleValue = titleEl.value;
 
             if (!titleValue) {
-                document.querySelector('#submit').disabled = true;
-                document.querySelector('#submit').textContent = 'Upload'
+                submitEl.disabled = true;
+                submitEl.textContent = 'Upload'
 
                 if (curFiles.length > 0) {
-                    document.querySelector('#fileinfo').textContent =
+                    fileInfoEl.textContent =
                         `You must give your video a title before you can upload it`;
+                    fileInfoEl.style.color = 'red';
                 }
             } else if (titleValue && curFiles.length > 0) {
-                document.querySelector('#submit').disabled = false;
-                document.querySelector('#submit').innerHTML = '<b>Upload</b>'
+                submitEl.disabled = false;
+                submitEl.innerHTML = '<b>Upload</b>'
 
-                document.querySelector('#select').textContent = 'Select a video'
+                selectEl.textContent = 'Select a video'
 
                 const file = curFiles[0];
-                document.querySelector('#fileinfo').innerHTML =
-                    `<<< Click to upload ${file.name} (${humanFileSize(file.size)}) as '${titleValue}'`;
+                fileInfoEl.innerHTML =
+                    `👈 Click to upload ${file.name} (${humanFileSize(file.size)}) as '${titleValue}'`;
+                fileInfoEl.style = null;
             } else {
                 // titleText && curFiles.length == 0
-                document.querySelector('#submit').disabled = true;
-                document.querySelector('#submit').textContent = 'Upload'
+                submitEl.disabled = true;
+                submitEl.textContent = 'Upload'
 
-                document.querySelector('#select').innerHTML = '<b>Select a video</b>'
+                selectEl.innerHTML = '<b>Select a video</b>'
             }
         }
 
@@ -117,7 +123,7 @@
         }
 
         function uploadFile() {
-            document.querySelector('#id_upload').click();
+            fileInputEl.click();
         }
     </script>
 {% endblock %}

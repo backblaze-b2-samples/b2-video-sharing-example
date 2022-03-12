@@ -10,8 +10,8 @@
             <source src="{{ object.transcoded.url }}" type="video/mp4">
         </video>
         <h2>{{ object.title }}</h2>
-        {{ document.user.username }}<br>
-        {{ document.uploaded_at }}
+        {{ video.user.username }}<br>
+        {{ video.uploaded_at }}
     {% else %}
         <h2>Please wait while your video is processed</h2>
 
@@ -20,7 +20,7 @@
         <script>
             async function pollForTranscoded(name) {
                 console.log(`Polling for ${name}`)
-                const response = await fetch(`/documents/${name}`)
+                const response = await fetch(`/api/videos/${name}`)
                     .then(response => {
                         if (response.ok) {
                             return response.json();
