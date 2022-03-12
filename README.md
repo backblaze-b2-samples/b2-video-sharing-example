@@ -78,7 +78,7 @@ AWS_STORAGE_BUCKET_NAME="<your public B2 bucket, for static web assets>"
 TRANSCODER_WEBHOOK="<the API endpoint for the transcoder worker, e.g. http://1.2.3.4:5678/videos>"
 ```
 
-Edit `mysite/settings.py` and add the domain name of your application server to `ALLOWED_HOSTS`. For example, if you were running the sample at `videos.example.com` you would use
+Edit `cirrustube/settings.py` and add the domain name of your application server to `ALLOWED_HOSTS`. For example, if you were running the sample at `videos.example.com` you would use
 
 ```python
 ALLOWED_HOSTS = ['videos.example.com']

@@ -6,7 +6,7 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import mysite.storage_backends
+import cirrustube.storage_backends
 
 
 class Migration(migrations.Migration):
@@ -18,17 +18,17 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Document',
+            name='Video',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=256)),
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('upload', models.FileField(storage=mysite.storage_backends.PrivateMediaStorage(), upload_to='')),
-                ('transcoded', models.FileField(storage=mysite.storage_backends.PrivateMediaStorage(), blank=True,
+                ('raw', models.FileField(storage=cirrustube.storage_backends.PrivateMediaStorage(), upload_to='')),
+                ('transcoded', models.FileField(storage=cirrustube.storage_backends.PrivateMediaStorage(), blank=True,
                                                 default=None, null=True, upload_to='')),
-                ('thumbnail', models.FileField(storage=mysite.storage_backends.PrivateMediaStorage(), blank=True,
+                ('thumbnail', models.FileField(storage=cirrustube.storage_backends.PrivateMediaStorage(), blank=True,
                                                default=None, null=True, upload_to='')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents',
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='videos',
                                            to=settings.AUTH_USER_MODEL)),
             ],
         ),
