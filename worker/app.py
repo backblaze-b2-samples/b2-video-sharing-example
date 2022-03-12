@@ -1,16 +1,16 @@
-import boto3
-import io
 import os
-import requests
-from subprocess import run, PIPE
-from flask import Flask
-from flask_restful import Resource, Api, reqparse
+from subprocess import run
+from tempfile import mkdtemp
 from threading import Thread
 from uuid import uuid4
-from tempfile import mkdtemp
 
+import boto3
+import requests
 # Never put credentials in your code!
 from dotenv import load_dotenv
+from flask import Flask
+from flask_restful import Resource, Api, reqparse
+
 load_dotenv()
 
 # Obtain B2 S3 compatible client
@@ -30,18 +30,21 @@ parser.add_argument('webhook', required=True)
 
 
 def transcode(inputObject, webhook):
-    input_key = inputObject
+    input_video = inputObject
 
-    # Unfortunately, we can't stream the B2 object into ffmpeg, since many video
-    # formats require ffmpeg to seek around the data to decode it
+    # Unfortunately, we can't directly stream the B2 object into ffmpeg, since
+    # many video formats require ffmpeg to seek around the data to decode it
     input_file = os.path.join(mkdtemp(), str(uuid4()))
 
-    print(f'Downloading s3://{bucket_name}/{input_key} to {input_file}')
+    print(f'Downloading s3://{bucket_name}/{input_video} to {input_file}')
 
-    s3.download_file(bucket_name, input_key, input_file)
+    s3.download_file(bucket_name, input_video, input_file)
 
     output_file = input_file + '.mp4'
-    command = f'ffmpeg -i {input_file} -c:a copy -s hd720 -preset superfast -y {output_file}'
+    thumbnail_file = input_file + '.jpg'
+    command = (f'ffmpeg -y -i {input_file} '
+               f'-c:a copy -s hd720 -preset superfast {output_file} '
+               f'-ss 00:00:01.000 -vf \'scale=320:320:force_original_aspect_ratio=decrease\' -vframes 1 {thumbnail_file}')
 
     print(f'Running {command}', flush=True)
 
@@ -51,20 +54,25 @@ def transcode(inputObject, webhook):
     print(f'Exit status {cp.returncode}')
 
     if cp.returncode == 0:
-        output_key = os.path.splitext(input_key)[0]+'.mp4'
+        output_video = os.path.splitext(input_video)[0] + '.mp4'
+        output_thumbnail = os.path.splitext(input_video)[0] + '.jpg'
 
-        print(f'Uploading {output_file} to s3://{bucket_name}/{output_key}')
-        s3.upload_file(output_file, os.environ['BUCKET_NAME'], output_key)
+        print(f'Uploading {output_video} to s3://{bucket_name}/{output_video}')
+        s3.upload_file(output_file, os.environ['BUCKET_NAME'], output_video)
+
+        print(f'Uploading {output_thumbnail} to s3://{bucket_name}/{output_thumbnail}')
+        s3.upload_file(thumbnail_file, os.environ['BUCKET_NAME'], output_thumbnail)
 
         response = {
             'status': 'success',
-            'inputObject': input_key,
-            'outputObject': output_key
+            'inputObject': input_video,
+            'outputObject': output_video,
+            'thumbnail': output_thumbnail
         }
     else:
         response = {
             'status': 'failure',
-            'inputObject': input_key
+            'inputObject': input_video
         }
 
     print(f'POSTing {response} to {webhook}')

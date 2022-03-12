@@ -1,14 +1,15 @@
 from rest_framework import serializers
-from .models import Video, Document
+
+from .models import Notification, Document
 
 
 class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
-        fields = ['title', 'uploaded_at', 'upload', 'transcoded', 'user']
+        fields = ['title', 'uploaded_at', 'upload', 'transcoded', 'thumbnail', 'user']
 
 
-class VideoSerializer(serializers.ModelSerializer):
+class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Video
-        fields = ['status', 'inputObject', 'outputObject']
+        model = Notification
+        fields = ['status', 'inputObject', 'outputObject', 'thumbnail']

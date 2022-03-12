@@ -1,33 +1,27 @@
 {% load static %}<!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
-    <title>Backblaze B2 Transcoder Example</title>
+    <title>CirrusTube</title>
     <link rel="stylesheet" type="text/css" href="{% static 'css/app.css' %}">
     <style type="text/css">
 
     </style>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <h1>Backblaze B2 Example</h1>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>CirrusTube</h1>
+        <p>Backblaze B2 Video Sharing Example</p>
         <hr>
-        {% if user.is_authenticated %}
-          <a href="{% url 'myvideos' %}">Videos</a> /
-          <a href="">Log out</a>
-        {% else %}
-          <a href="{% url 'login' %}">Log in</a>
-        {% endif %}
-        <hr>
-      </header>
-      <main>
+    </header>
+    <main>
         {% block content %}
         {% endblock %}
-      </main>
-      <footer>
+    </main>
+    <footer>
 
-      </footer>
-    </div>
-  </body>
+    </footer>
+</div>
+</body>
 </html>

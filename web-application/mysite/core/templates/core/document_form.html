@@ -2,59 +2,122 @@
 {% load static %}
 
 {% block content %}
-  <div id="uploader">
-    <h2>Upload a Video</h2>
-    <form id="form" method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">Submit</button>
-    </form>
-  </div>
+    <a href="{% url 'home' %}">Home</a>
+    / <a href="{% url 'logout' %}">Log out</a>
+    <hr>
+    <div id="uploader">
+        <h2>Upload a Video</h2>
+        <form id="form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <label for="id_title">Title:</label>
+                <input type="text" name="title" maxlength="256" required="" id="id_title">
+            </p>
+            <p>
+                <button type="button" name="button" id="select" onclick="uploadFile()"><b>Select a video</b></button>
+                <button disabled="true" type="submit" id="submit">Upload</button> <span id="fileinfo"></span>
+                <input type="file" name="upload" required="" id="id_upload" accept="video/*">
+            </p>
+        </form>
+    </div>
 
-  <div id="message" style="display: none">
-    <h2>Please wait while your video is uploaded</h2>
-    <img src="{% static 'images/throbber.gif' %}">
-  </div>
+    <div id="message" style="display: none">
+        <h2>Please wait while your video is uploaded</h2>
+        <img src="{% static 'images/throbber.gif' %}">
+    </div>
 
-  <script>
-    async function handleForm(event) {
-      // Show the message, hide the upload form
-      document.getElementById('uploader').style.setProperty('display', 'none');
-      document.getElementById('message').style.removeProperty('display');
+    <script>
+        const form = document.querySelector('#form');
+        form.addEventListener('submit', handleFormSubmit);
 
-      // Get the file object from the form
-      const file = form.elements["upload"].files[0]
+        const fileInput = document.querySelector('#id_upload');
+        fileInput.addEventListener('change', handleFileSelectAndTitle);
 
-      // Discard the 'fake path' in the filename
-      const name = file.name.split("\\").pop()
+        const title = document.querySelector('#id_title');
+        title.addEventListener('input', handleFileSelectAndTitle);
 
-      // Make a FormData to POST
-      const data = new FormData();
-      data.append('upload', file);
-      data.append('title', form.elements["title"].value);
-      data.append('csrfmiddlewaretoken', form.elements["csrfmiddlewaretoken"].value);
+        async function handleFormSubmit(event) {
+            // Show the message, hide the upload form
+            document.querySelector('#uploader').style.setProperty('display', 'none');
+            document.querySelector('#message').style.removeProperty('display');
 
-      fetch('', {
-        method: 'POST',
-        body: data,
-      })
-      .then(response => {
-        if (response.ok) {
-          console.log(`Fetch succeeded; url: ${response.url}`);
+            // Get the file object from the form
+            const file = form.elements["upload"].files[0]
 
-          // Go to detail page
-          location.href = response.url;
-        } else {
-          console.log(`Fetch failed with status code: ${response.status}`);
+            // Discard the 'fake path' in the filename
+            const name = file.name.split("\\").pop()
+
+            // Make a FormData object to POST
+            const formData = new FormData();
+            formData.append('upload', file);
+            formData.append('title', form.elements["title"].value);
+            formData.append('csrfmiddlewaretoken', form.elements["csrfmiddlewaretoken"].value);
+
+            // POST the file
+            fetch('', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => {
+                    if (response.ok) {
+                        console.log(`Fetch succeeded; url: ${response.url}`);
+
+                        // Go to detail page
+                        location.href = response.url;
+                    } else {
+                        console.log(`Fetch failed with status code: ${response.status}`);
+                    }
+                })
+                .catch(error => console.log(`Fetch failed: ${error}`));
+
+            // Don't switch the page when the upload is complete
+            event.preventDefault();
         }
-      })
-      .catch(error => console.log(`Fetch failed: ${error}`));
 
-      // Don't switch the page when the upload is complete
-      event.preventDefault();
-    }
+        function handleFileSelectAndTitle() {
+            const curFiles = fileInput.files;
+            const titleValue = title.value;
 
-    const form = document.getElementById('form');
-    form.addEventListener('submit', handleForm);
-  </script>
+            if (!titleValue) {
+                document.querySelector('#submit').disabled = true;
+                document.querySelector('#submit').textContent = 'Upload'
+
+                if (curFiles.length > 0) {
+                    document.querySelector('#fileinfo').textContent =
+                        `You must give your video a title before you can upload it`;
+                }
+            } else if (titleValue && curFiles.length > 0) {
+                document.querySelector('#submit').disabled = false;
+                document.querySelector('#submit').innerHTML = '<b>Upload</b>'
+
+                document.querySelector('#select').textContent = 'Select a video'
+
+                const file = curFiles[0];
+                document.querySelector('#fileinfo').innerHTML =
+                    `<<< Click to upload ${file.name} (${humanFileSize(file.size)}) as '${titleValue}'`;
+            } else {
+                // titleText && curFiles.length == 0
+                document.querySelector('#submit').disabled = true;
+                document.querySelector('#submit').textContent = 'Upload'
+
+                document.querySelector('#select').innerHTML = '<b>Select a video</b>'
+            }
+        }
+
+        function humanFileSize(number) {
+            if (number < (1 << 10)) {
+                return number + 'bytes';
+            } else if (number < (1 << 20)) {
+                return (number / (1 << 10)).toFixed(1) + 'KB';
+            } else if (number < (1 << 30)) {
+                return (number / (1 << 20)).toFixed(1) + 'MB';
+            } else {
+                return (number / (1 << 30)).toFixed(1) + 'GB';
+            }
+        }
+
+        function uploadFile() {
+            document.querySelector('#id_upload').click();
+        }
+    </script>
 {% endblock %}
