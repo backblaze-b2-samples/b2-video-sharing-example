@@ -2,7 +2,7 @@
 
 The [Backblaze B2](https://www.backblaze.com/b2/cloud-storage.html) Video Sharing Example comprises a
 lightweight [Flask](https://palletsprojects.com/p/flask/) [worker app](https://github.com/Backblaze-B2-Samples/b2-transcoder-worker)
-and a web app implemented with [Django](https://www.djangoproject.com) and JavaScript. Together, they implement a simple
+and a web app implemented with [Django](https://www.djangoproject.com) and JavaScript. Together, they implement 'CatBlaze', a simple
 video sharing site.
 
 ## User Experience
@@ -78,7 +78,7 @@ AWS_STORAGE_BUCKET_NAME="<your public B2 bucket, for static web assets>"
 TRANSCODER_WEBHOOK="<the API endpoint for the transcoder worker, e.g. http://1.2.3.4:5678/videos>"
 ```
 
-Edit `cirrustube/settings.py` and add the domain name of your application server to `ALLOWED_HOSTS`. For example, if you were running the sample at `videos.example.com` you would use
+Edit `catblaze/settings.py` and add the domain name of your application server to `ALLOWED_HOSTS`. For example, if you were running the sample at `videos.example.com` you would use
 
 ```python
 ALLOWED_HOSTS = ['videos.example.com']

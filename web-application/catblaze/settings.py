@@ -30,7 +30,7 @@ INSTALLED_APPS = [
 
     'storages',
 
-    'cirrustube.core',
+    'catblaze.core',
 ]
 
 MIDDLEWARE = [
@@ -43,12 +43,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'cirrustube.urls'
+ROOT_URLCONF = 'catblaze.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'cirrustube/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'catblaze/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -61,7 +61,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'cirrustube.wsgi.application'
+WSGI_APPLICATION = 'catblaze.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -91,7 +91,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'cirrustube/static'),
+    os.path.join(BASE_DIR, 'catblaze/static'),
 ]
 
 # Set these in a .env file or as environment variables
@@ -110,14 +110,14 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 
 AWS_STATIC_LOCATION = 'static'
-STATICFILES_STORAGE = 'cirrustube.storage_backends.StaticStorage'
+STATICFILES_STORAGE = 'catblaze.storage_backends.StaticStorage'
 STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT}/"
 
 AWS_PUBLIC_MEDIA_LOCATION = 'media/public'
-DEFAULT_FILE_STORAGE = 'cirrustube.storage_backends.PublicMediaStorage'
+DEFAULT_FILE_STORAGE = 'catblaze.storage_backends.PublicMediaStorage'
 
 AWS_PRIVATE_MEDIA_LOCATION = 'media/private'
-PRIVATE_FILE_STORAGE = 'cirrustube.storage_backends.PrivateMediaStorage'
+PRIVATE_FILE_STORAGE = 'catblaze.storage_backends.PrivateMediaStorage'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'

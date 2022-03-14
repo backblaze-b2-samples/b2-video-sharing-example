@@ -1,7 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from cirrustube.core import views
+from catblaze.core import views
 
 urlpatterns = [
     # Website

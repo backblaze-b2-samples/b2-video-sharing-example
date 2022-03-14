@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from cirrustube.storage_backends import PrivateMediaStorage
+from catblaze.storage_backends import PrivateMediaStorage
 
 
 class Video(models.Model):
