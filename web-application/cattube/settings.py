@@ -30,7 +30,7 @@ INSTALLED_APPS = [
 
     'storages',
 
-    'catblaze.core',
+    'cattube.core',
 ]
 
 MIDDLEWARE = [
@@ -43,12 +43,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'catblaze.urls'
+ROOT_URLCONF = 'cattube.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'catblaze/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'cattube/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -61,7 +61,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'catblaze.wsgi.application'
+WSGI_APPLICATION = 'cattube.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -91,7 +91,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'catblaze/static'),
+    os.path.join(BASE_DIR, 'cattube/static'),
 ]
 
 # Set these in a .env file or as environment variables
@@ -110,14 +110,14 @@ AWS_S3_OBJECT_PARAMETERS = {
 }
 
 AWS_STATIC_LOCATION = 'static'
-STATICFILES_STORAGE = 'catblaze.storage_backends.StaticStorage'
+STATICFILES_STORAGE = 'cattube.storage_backends.StaticStorage'
 STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT}/"
 
 AWS_PUBLIC_MEDIA_LOCATION = 'media/public'
-DEFAULT_FILE_STORAGE = 'catblaze.storage_backends.PublicMediaStorage'
+DEFAULT_FILE_STORAGE = 'cattube.storage_backends.PublicMediaStorage'
 
 AWS_PRIVATE_MEDIA_LOCATION = 'media/private'
-PRIVATE_FILE_STORAGE = 'catblaze.storage_backends.PrivateMediaStorage'
+PRIVATE_FILE_STORAGE = 'cattube.storage_backends.PrivateMediaStorage'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
