@@ -1,5 +1,7 @@
 import os
+from urllib.parse import urlsplit
 
+from django.core.exceptions import ImproperlyConfigured
 # Never put credentials in your code!
 from dotenv import load_dotenv
 
@@ -94,17 +96,37 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'cattube/static'),
 ]
 
+def required_env(name):
+    value = os.environ.get(name)
+    if value:
+        return value
+    raise ImproperlyConfigured(f'Missing required environment variable: {name}')
+
+
+def public_url_settings(public_url_base):
+    parsed = urlsplit(public_url_base.rstrip('/'))
+    if not parsed.scheme or not parsed.netloc:
+        raise ImproperlyConfigured(
+            'B2_PUBLIC_URL_BASE must include a URL scheme and host, '
+            'for example https://f001.backblazeb2.com/file/my-public-bucket'
+        )
+    return f'{parsed.scheme}:', f'{parsed.netloc}{parsed.path.rstrip("/")}'
+
+
 # Set these in a .env file or as environment variables
-B2_APPLICATION_KEY_ID = os.environ['B2_APPLICATION_KEY_ID']
-B2_APPLICATION_KEY = os.environ['B2_APPLICATION_KEY']
-B2_BUCKET_NAME = os.environ['B2_BUCKET_NAME']
-B2_REGION = os.environ['B2_REGION']
-B2_PUBLIC_URL_BASE = os.environ['B2_PUBLIC_URL_BASE'].rstrip('/')
-TRANSCODER_WEBHOOK = os.environ['TRANSCODER_WEBHOOK']
+B2_APPLICATION_KEY_ID = required_env('B2_APPLICATION_KEY_ID')
+B2_APPLICATION_KEY = required_env('B2_APPLICATION_KEY')
+B2_BUCKET_NAME = required_env('B2_BUCKET_NAME')
+B2_PRIVATE_BUCKET_NAME = required_env('B2_PRIVATE_BUCKET_NAME')
+B2_REGION = required_env('B2_REGION')
+B2_PUBLIC_URL_BASE = required_env('B2_PUBLIC_URL_BASE').rstrip('/')
+TRANSCODER_WEBHOOK = required_env('TRANSCODER_WEBHOOK')
 
 B2_STORAGE_ENDPOINT_HOST = f's3.{B2_REGION}.backblazeb2.com'
 B2_STORAGE_ENDPOINT_URL = f'https://{B2_STORAGE_ENDPOINT_HOST}'
+# Keep this value mirrored in worker/app.py so both deployables identify the sample.
 B2_USER_AGENT_EXTRA = 'b2-video-sharing-example (backblaze-b2-samples)'
+B2_PUBLIC_URL_PROTOCOL, B2_PUBLIC_URL_LOCATION = public_url_settings(B2_PUBLIC_URL_BASE)
 
 B2_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
