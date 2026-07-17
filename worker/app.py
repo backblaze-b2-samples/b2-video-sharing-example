@@ -5,6 +5,7 @@ from threading import Thread
 from uuid import uuid4
 
 import boto3
+from botocore.client import Config
 import requests
 # Never put credentials in your code!
 from dotenv import load_dotenv
@@ -13,13 +14,18 @@ from flask_restful import Resource, Api, reqparse
 
 load_dotenv()
 
+B2_USER_AGENT_EXTRA = 'b2-video-sharing-example (backblaze-b2-samples)'
+B2_REGION = os.environ['B2_REGION']
+
 # Obtain B2 S3 compatible client
 s3 = boto3.client(service_name='s3',
-                  endpoint_url=os.environ['B2_ENDPOINT_URL'],
+                  region_name=B2_REGION,
+                  endpoint_url=f'https://s3.{B2_REGION}.backblazeb2.com',
                   aws_access_key_id=os.environ['B2_APPLICATION_KEY_ID'],
-                  aws_secret_access_key=os.environ['B2_APPLICATION_KEY'])
+                  aws_secret_access_key=os.environ['B2_APPLICATION_KEY'],
+                  config=Config(user_agent_extra=B2_USER_AGENT_EXTRA))
 
-bucket_name = os.environ['BUCKET_NAME']
+bucket_name = os.environ['B2_BUCKET_NAME']
 
 app = Flask(__name__)
 api = Api(app)
@@ -58,10 +64,10 @@ def transcode(inputObject, webhook):
         output_thumbnail = os.path.splitext(input_video)[0] + '.jpg'
 
         print(f'Uploading {output_video} to s3://{bucket_name}/{output_video}')
-        s3.upload_file(output_file, os.environ['BUCKET_NAME'], output_video)
+        s3.upload_file(output_file, bucket_name, output_video)
 
         print(f'Uploading {output_thumbnail} to s3://{bucket_name}/{output_thumbnail}')
-        s3.upload_file(thumbnail_file, os.environ['BUCKET_NAME'], output_thumbnail)
+        s3.upload_file(thumbnail_file, bucket_name, output_thumbnail)
 
         response = {
             'status': 'success',

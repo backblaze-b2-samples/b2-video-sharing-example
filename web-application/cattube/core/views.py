@@ -16,7 +16,7 @@ from .models import Video
 from .serializers import VideoSerializer, NotificationSerializer
 
 transcoder_url = settings.TRANSCODER_WEBHOOK
-private_bucket_name = settings.AWS_PRIVATE_MEDIA_LOCATION
+private_media_location = settings.B2_PRIVATE_MEDIA_LOCATION
 
 
 class VideoListView(ListView):
@@ -50,7 +50,7 @@ class VideoCreateView(CreateView):
         response = super().form_valid(form)
         webhook = self.request.build_absolute_uri(reverse('notification'))
         print(f'Our webhook is {webhook}')
-        send_notification_to_transcoder(webhook, f'{private_bucket_name}/{self.object.raw.name}')
+        send_notification_to_transcoder(webhook, f'{private_media_location}/{self.object.raw.name}')
         return response
 
 
@@ -94,9 +94,9 @@ def receive_notification_from_transcoder(request):
 
         try:
             # Remove the path prefixes from the object keys
-            raw = request.data['inputObject'].removeprefix(f'{private_bucket_name}/')
-            transcoded = request.data['outputObject'].removeprefix(f'{private_bucket_name}/')
-            thumbnail = request.data['thumbnail'].removeprefix(f'{private_bucket_name}/')
+            raw = request.data['inputObject'].removeprefix(f'{private_media_location}/')
+            transcoded = request.data['outputObject'].removeprefix(f'{private_media_location}/')
+            thumbnail = request.data['thumbnail'].removeprefix(f'{private_media_location}/')
 
             print(f'Getting {raw}')
 

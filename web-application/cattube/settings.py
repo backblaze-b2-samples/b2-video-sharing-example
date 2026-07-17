@@ -95,28 +95,29 @@ STATICFILES_DIRS = [
 ]
 
 # Set these in a .env file or as environment variables
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
-AWS_PRIVATE_BUCKET_NAME = os.environ['AWS_PRIVATE_BUCKET_NAME']
-AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
-AWS_S3_REGION_NAME = os.environ['AWS_S3_REGION_NAME']
+B2_APPLICATION_KEY_ID = os.environ['B2_APPLICATION_KEY_ID']
+B2_APPLICATION_KEY = os.environ['B2_APPLICATION_KEY']
+B2_BUCKET_NAME = os.environ['B2_BUCKET_NAME']
+B2_REGION = os.environ['B2_REGION']
+B2_PUBLIC_URL_BASE = os.environ['B2_PUBLIC_URL_BASE'].rstrip('/')
 TRANSCODER_WEBHOOK = os.environ['TRANSCODER_WEBHOOK']
 
-AWS_S3_ENDPOINT = f's3.{AWS_S3_REGION_NAME}.backblazeb2.com'
-AWS_S3_ENDPOINT_URL = f'https://{AWS_S3_ENDPOINT}'
+B2_STORAGE_ENDPOINT_HOST = f's3.{B2_REGION}.backblazeb2.com'
+B2_STORAGE_ENDPOINT_URL = f'https://{B2_STORAGE_ENDPOINT_HOST}'
+B2_USER_AGENT_EXTRA = 'b2-video-sharing-example (backblaze-b2-samples)'
 
-AWS_S3_OBJECT_PARAMETERS = {
+B2_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 
-AWS_STATIC_LOCATION = 'static'
+B2_STATIC_LOCATION = 'static'
 STATICFILES_STORAGE = 'cattube.storage_backends.StaticStorage'
-STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT}/"
+STATIC_URL = f'{B2_PUBLIC_URL_BASE}/{B2_STATIC_LOCATION}/'
 
-AWS_PUBLIC_MEDIA_LOCATION = 'media/public'
+B2_PUBLIC_MEDIA_LOCATION = 'media/public'
 DEFAULT_FILE_STORAGE = 'cattube.storage_backends.PublicMediaStorage'
 
-AWS_PRIVATE_MEDIA_LOCATION = 'media/private'
+B2_PRIVATE_MEDIA_LOCATION = 'media/private'
 PRIVATE_FILE_STORAGE = 'cattube.storage_backends.PrivateMediaStorage'
 
 LOGIN_URL = 'login'
