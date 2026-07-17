@@ -67,16 +67,30 @@ cd ..
 
 ### Web Application
 
-Create a `.env` file in the `web-application` directory or set environment variables with your configuration:
+Create a `.env` file in the repository root, the `web-application` directory, or set environment variables with your configuration. You can start by copying `.env.example`:
 
 ```bash
-AWS_S3_REGION_NAME="<for example: us-west-001>"
-AWS_ACCESS_KEY_ID="<your B2 application key ID>"
-AWS_SECRET_ACCESS_KEY="<your B2 application key>"
-AWS_PRIVATE_BUCKET_NAME="<your private B2 bucket, for uploaded videos>"
-AWS_STORAGE_BUCKET_NAME="<your public B2 bucket, for static web assets>"
+B2_APPLICATION_KEY_ID="<your B2 application key ID>"
+B2_APPLICATION_KEY="<your B2 application key>"
+B2_REGION="<for example: us-west-001>"
+B2_BUCKET_NAME="<your public B2 bucket name, for static web assets>"
+B2_PUBLIC_URL_BASE="<for example: https://f001.backblazeb2.com/file/your-public-bucket>"
+B2_PRIVATE_BUCKET_NAME="<your private B2 bucket name, for uploaded videos>"
 TRANSCODER_WEBHOOK="<the API endpoint for the transcoder worker, e.g. http://1.2.3.4:5678/videos>"
 ```
+
+`B2_BUCKET_NAME` and `B2_PUBLIC_URL_BASE` are for public static assets and public media only. `B2_PRIVATE_BUCKET_NAME`
+must be a separate private bucket for raw uploads, transcoded videos, and thumbnails. Do not point
+`B2_PUBLIC_URL_BASE` at the private bucket.
+
+The sample derives the Backblaze S3-compatible API endpoint from `B2_REGION` as
+`https://s3.<region>.backblazeb2.com`. Custom S3 proxies or alternate endpoint hosts are intentionally outside the
+scope of this sample.
+
+For existing deployments, copy the current public/static bucket value into `B2_BUCKET_NAME` and the current private
+media bucket value into `B2_PRIVATE_BUCKET_NAME`. Add the new `B2_*` variables before deploying this version and keep
+the old variables in place until the rollback window has passed. If you change the public bucket or public URL base,
+run `collectstatic` again and allow cached static URLs to expire or invalidate them.
 
 Edit `cattube/settings.py` and add the domain name of your application server to `ALLOWED_HOSTS`. For example, if you were running the sample at `videos.example.com` you would use
 
@@ -96,13 +110,13 @@ python manage.py collectstatic
 
 ### Worker
 
-Create a `.env` file in the worker directory or set environment variables with your configuration:
+Create a `.env` file in the repository root, the `worker` directory, or set environment variables with your configuration. You can start by copying `.env.example`; the worker uses the shared credentials, region, and private bucket values:
 
 ```bash
-B2_ENDPOINT_URL="<for example: https://s3.us-west-001.backblazeb2.com>"
 B2_APPLICATION_KEY_ID="<your B2 application key ID>"
 B2_APPLICATION_KEY="<your B2 application key>"
-BUCKET_NAME="<your private B2 bucket, for uploaded videos>"
+B2_REGION="<for example: us-west-001>"
+B2_PRIVATE_BUCKET_NAME="<your private B2 bucket name, for uploaded videos>"
 ```
 
 ## Run the Worker App

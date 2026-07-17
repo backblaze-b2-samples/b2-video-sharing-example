@@ -1,3 +1,7 @@
+import hmac
+import os
+import posixpath
+
 import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -16,7 +20,29 @@ from .models import Video
 from .serializers import VideoSerializer, NotificationSerializer
 
 transcoder_url = settings.TRANSCODER_WEBHOOK
-private_bucket_name = settings.AWS_PRIVATE_MEDIA_LOCATION
+private_media_location = settings.B2_PRIVATE_MEDIA_LOCATION
+
+
+def private_object_key(name):
+    return f'{private_media_location}/{name}'
+
+
+def private_media_name(object_key):
+    prefix = f'{private_media_location}/'
+    if not object_key.startswith(prefix):
+        raise ValueError(f'object key must start with {prefix}')
+
+    name = object_key[len(prefix):]
+    normalized_name = posixpath.normpath(name)
+    if normalized_name in ('', '.') or normalized_name.startswith('../') or '/..' in normalized_name:
+        raise ValueError('object key must stay inside the private media prefix')
+
+    return normalized_name
+
+
+def expected_output_names(raw_name):
+    stem = os.path.splitext(raw_name)[0]
+    return f'{stem}.mp4', f'{stem}.jpg'
 
 
 class VideoListView(ListView):
@@ -50,7 +76,11 @@ class VideoCreateView(CreateView):
         response = super().form_valid(form)
         webhook = self.request.build_absolute_uri(reverse('notification'))
         print(f'Our webhook is {webhook}')
-        send_notification_to_transcoder(webhook, f'{private_bucket_name}/{self.object.raw.name}')
+        send_notification_to_transcoder(
+            webhook,
+            private_object_key(self.object.raw.name),
+            self.object.transcoder_token,
+        )
         return response
 
 
@@ -76,12 +106,13 @@ def video_detail(request, name):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-def send_notification_to_transcoder(webhook, object_key):
+def send_notification_to_transcoder(webhook, object_key, token):
     payload = {
         'inputObject': object_key,
-        'webhook': webhook
+        'webhook': webhook,
+        'token': token
     }
-    print(f'Sending {payload} to {transcoder_url}')
+    print(f'Sending transcoder job for {object_key} to {transcoder_url}')
     r = requests.post(transcoder_url, json=payload)
     print(f'Status code: {r.status_code}')
 
@@ -90,24 +121,35 @@ def send_notification_to_transcoder(webhook, object_key):
 def receive_notification_from_transcoder(request):
     serializer = NotificationSerializer(data=request.data)
     if serializer.is_valid():
-        print(f'Received notification: {serializer.data}')
+        data = serializer.validated_data
+        print(f'Received notification for {data["inputObject"]}')
 
         try:
-            # Remove the path prefixes from the object keys
-            raw = request.data['inputObject'].removeprefix(f'{private_bucket_name}/')
-            transcoded = request.data['outputObject'].removeprefix(f'{private_bucket_name}/')
-            thumbnail = request.data['thumbnail'].removeprefix(f'{private_bucket_name}/')
+            raw = private_media_name(data['inputObject'])
+            transcoded = private_media_name(data['outputObject'])
+            thumbnail = private_media_name(data['thumbnail'])
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
-            print(f'Getting {raw}')
+        print(f'Getting {raw}')
 
+        try:
             doc = Video.objects.get(raw=raw)
-            doc.transcoded.name = transcoded
-            doc.thumbnail.name = thumbnail
-
-            print(f'Saving {doc}')
-            doc.save()
         except Video.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if not hmac.compare_digest(data['token'], doc.transcoder_token):
+            return Response({'detail': 'invalid transcoder token'}, status=status.HTTP_403_FORBIDDEN)
+
+        expected_transcoded, expected_thumbnail = expected_output_names(raw)
+        if transcoded != expected_transcoded or thumbnail != expected_thumbnail:
+            return Response({'detail': 'unexpected transcoder output key'}, status=status.HTTP_400_BAD_REQUEST)
+
+        doc.transcoded.name = transcoded
+        doc.thumbnail.name = thumbnail
+
+        print(f'Saving {doc}')
+        doc.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

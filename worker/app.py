@@ -5,31 +5,50 @@ from threading import Thread
 from uuid import uuid4
 
 import boto3
+from botocore.client import Config
 import requests
 # Never put credentials in your code!
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 
 load_dotenv()
 
+
+def required_env(name):
+    value = os.environ.get(name)
+    if value:
+        return value
+    raise RuntimeError(f'Missing required environment variable: {name}')
+
+
+# Keep this value mirrored in web-application/cattube/settings.py.
+B2_USER_AGENT_EXTRA = 'b2-video-sharing-example (backblaze-b2-samples)'
+B2_REGION = required_env('B2_REGION')
+B2_STORAGE_ENDPOINT_URL = f'https://s3.{B2_REGION}.backblazeb2.com'
+B2_PRIVATE_BUCKET_NAME = required_env('B2_PRIVATE_BUCKET_NAME')
+
 # Obtain B2 S3 compatible client
 s3 = boto3.client(service_name='s3',
-                  endpoint_url=os.environ['B2_ENDPOINT_URL'],
-                  aws_access_key_id=os.environ['B2_APPLICATION_KEY_ID'],
-                  aws_secret_access_key=os.environ['B2_APPLICATION_KEY'])
+                  region_name=B2_REGION,
+                  endpoint_url=B2_STORAGE_ENDPOINT_URL,
+                  aws_access_key_id=required_env('B2_APPLICATION_KEY_ID'),
+                  aws_secret_access_key=required_env('B2_APPLICATION_KEY'),
+                  config=Config(user_agent_extra=B2_USER_AGENT_EXTRA))
 
-bucket_name = os.environ['BUCKET_NAME']
+bucket_name = B2_PRIVATE_BUCKET_NAME
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024
 api = Api(app)
 
 parser = reqparse.RequestParser()
 parser.add_argument('inputObject', required=True)
 parser.add_argument('webhook', required=True)
+parser.add_argument('token', required=True)
 
 
-def transcode(inputObject, webhook):
+def transcode(inputObject, webhook, token):
     input_video = inputObject
 
     # Unfortunately, we can't directly stream the B2 object into ffmpeg, since
@@ -58,30 +77,34 @@ def transcode(inputObject, webhook):
         output_thumbnail = os.path.splitext(input_video)[0] + '.jpg'
 
         print(f'Uploading {output_video} to s3://{bucket_name}/{output_video}')
-        s3.upload_file(output_file, os.environ['BUCKET_NAME'], output_video)
+        s3.upload_file(output_file, bucket_name, output_video)
 
         print(f'Uploading {output_thumbnail} to s3://{bucket_name}/{output_thumbnail}')
-        s3.upload_file(thumbnail_file, os.environ['BUCKET_NAME'], output_thumbnail)
+        s3.upload_file(thumbnail_file, bucket_name, output_thumbnail)
 
         response = {
             'status': 'success',
             'inputObject': input_video,
             'outputObject': output_video,
-            'thumbnail': output_thumbnail
+            'thumbnail': output_thumbnail,
+            'token': token
         }
     else:
         response = {
             'status': 'failure',
-            'inputObject': input_video
+            'inputObject': input_video,
+            'token': token
         }
 
-    print(f'POSTing {response} to {webhook}')
+    print(f'POSTing transcoder status for {input_video} to {webhook}')
     r = requests.post(webhook, json=response)
     print(f'Status code {r.status_code}')
 
 
 class Videos(Resource):
     def post(self):
+        if not request.is_json:
+            return {'message': 'JSON payload required'}, 415
         args = parser.parse_args()
         thread = Thread(target=transcode, kwargs={**args})
         thread.start()

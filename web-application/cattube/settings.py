@@ -1,5 +1,7 @@
 import os
+from urllib.parse import urlsplit
 
+from django.core.exceptions import ImproperlyConfigured
 # Never put credentials in your code!
 from dotenv import load_dotenv
 
@@ -94,29 +96,50 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'cattube/static'),
 ]
 
+def required_env(name):
+    value = os.environ.get(name)
+    if value:
+        return value
+    raise ImproperlyConfigured(f'Missing required environment variable: {name}')
+
+
+def public_url_settings(public_url_base):
+    parsed = urlsplit(public_url_base.rstrip('/'))
+    if not parsed.scheme or not parsed.netloc:
+        raise ImproperlyConfigured(
+            'B2_PUBLIC_URL_BASE must include a URL scheme and host, '
+            'for example https://f001.backblazeb2.com/file/my-public-bucket'
+        )
+    return f'{parsed.scheme}:', f'{parsed.netloc}{parsed.path.rstrip("/")}'
+
+
 # Set these in a .env file or as environment variables
-AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
-AWS_PRIVATE_BUCKET_NAME = os.environ['AWS_PRIVATE_BUCKET_NAME']
-AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
-AWS_S3_REGION_NAME = os.environ['AWS_S3_REGION_NAME']
-TRANSCODER_WEBHOOK = os.environ['TRANSCODER_WEBHOOK']
+B2_APPLICATION_KEY_ID = required_env('B2_APPLICATION_KEY_ID')
+B2_APPLICATION_KEY = required_env('B2_APPLICATION_KEY')
+B2_BUCKET_NAME = required_env('B2_BUCKET_NAME')
+B2_PRIVATE_BUCKET_NAME = required_env('B2_PRIVATE_BUCKET_NAME')
+B2_REGION = required_env('B2_REGION')
+B2_PUBLIC_URL_BASE = required_env('B2_PUBLIC_URL_BASE').rstrip('/')
+TRANSCODER_WEBHOOK = required_env('TRANSCODER_WEBHOOK')
 
-AWS_S3_ENDPOINT = f's3.{AWS_S3_REGION_NAME}.backblazeb2.com'
-AWS_S3_ENDPOINT_URL = f'https://{AWS_S3_ENDPOINT}'
+B2_STORAGE_ENDPOINT_HOST = f's3.{B2_REGION}.backblazeb2.com'
+B2_STORAGE_ENDPOINT_URL = f'https://{B2_STORAGE_ENDPOINT_HOST}'
+# Keep this value mirrored in worker/app.py so both deployables identify the sample.
+B2_USER_AGENT_EXTRA = 'b2-video-sharing-example (backblaze-b2-samples)'
+B2_PUBLIC_URL_PROTOCOL, B2_PUBLIC_URL_LOCATION = public_url_settings(B2_PUBLIC_URL_BASE)
 
-AWS_S3_OBJECT_PARAMETERS = {
+B2_OBJECT_PARAMETERS = {
     'CacheControl': 'max-age=86400',
 }
 
-AWS_STATIC_LOCATION = 'static'
+B2_STATIC_LOCATION = 'static'
 STATICFILES_STORAGE = 'cattube.storage_backends.StaticStorage'
-STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT}/"
+STATIC_URL = f'{B2_PUBLIC_URL_BASE}/{B2_STATIC_LOCATION}/'
 
-AWS_PUBLIC_MEDIA_LOCATION = 'media/public'
+B2_PUBLIC_MEDIA_LOCATION = 'media/public'
 DEFAULT_FILE_STORAGE = 'cattube.storage_backends.PublicMediaStorage'
 
-AWS_PRIVATE_MEDIA_LOCATION = 'media/private'
+B2_PRIVATE_MEDIA_LOCATION = 'media/private'
 PRIVATE_FILE_STORAGE = 'cattube.storage_backends.PrivateMediaStorage'
 
 LOGIN_URL = 'login'

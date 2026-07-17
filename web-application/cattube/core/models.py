@@ -1,7 +1,13 @@
+import secrets
+
 from django.contrib.auth.models import User
 from django.db import models
 
 from cattube.storage_backends import PrivateMediaStorage
+
+
+def generate_transcoder_token():
+    return secrets.token_urlsafe(32)
 
 
 class Video(models.Model):
@@ -10,6 +16,7 @@ class Video(models.Model):
     raw = models.FileField(storage=PrivateMediaStorage())
     transcoded = models.FileField(storage=PrivateMediaStorage(), default=None, blank=True, null=True)
     thumbnail = models.FileField(storage=PrivateMediaStorage(), default=None, blank=True, null=True)
+    transcoder_token = models.CharField(max_length=128, default=generate_transcoder_token, editable=False)
     user = models.ForeignKey(User, related_name='videos', on_delete=models.CASCADE)
 
     def __str__(self):
